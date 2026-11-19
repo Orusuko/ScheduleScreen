@@ -44,6 +44,7 @@ export function HomeScreen({ onImport, onSettings }: { onImport: () => void; onS
         <div className="empty">
           <h1>Sin funciones para este día</h1>
           <p>Importa el PDF de Vista, Session by Finish Time o Session by Start Time.</p>
+          <p>Si el archivo es de otro día pero los horarios son los mismos, al importarlo puedes guardarlo como hoy.</p>
           <button type="button" className="btn btn-primary" onClick={onImport}>
             Importar PDF
           </button>

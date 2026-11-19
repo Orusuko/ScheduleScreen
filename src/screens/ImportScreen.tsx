@@ -2,20 +2,25 @@ import { useEffect, useState } from 'react'
 import { Logo } from '../components/Logo'
 import { ImportError } from '../services/pdf/errors'
 import { reconstruct } from '../services/pdf/reconstruct'
+import { shiftReportToOperationalDate } from '../services/schedule/reuseDay'
 import { planReimport, type ReimportPlan } from '../services/storage/reimport'
+import { useNow } from '../hooks/useNow'
 import { useStore } from '../store/Store'
 import type { ParsedReport } from '../types'
-import { formatDateTime, formatOperationalDate, formatTime } from '../utils/time'
+import { currentOperationalDate, formatDateTime, formatOperationalDate, formatTime } from '../utils/time'
 
 type Preview = { report: ParsedReport; plan: ReimportPlan }
+type PendingSave = { report: ParsedReport; plan: ReimportPlan }
 
 export function ImportScreen({ sharedPdf, onConsumed }: { sharedPdf: Uint8Array | null; onConsumed: () => void }) {
   const { data, commitImport } = useStore()
+  const now = useNow()
+  const today = currentOperationalDate(now)
   const [preview, setPreview] = useState<Preview | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const [askDrop, setAskDrop] = useState(false)
-  const [saved, setSaved] = useState(false)
+  const [pending, setPending] = useState<PendingSave | null>(null)
+  const [saved, setSaved] = useState<string | null>(null)
 
   useEffect(() => {
     if (!sharedPdf) return
@@ -28,8 +33,8 @@ export function ImportScreen({ sharedPdf, onConsumed }: { sharedPdf: Uint8Array 
   async function readBytes(bytes: Uint8Array) {
     setBusy(true)
     setError(null)
-    setSaved(false)
-    setAskDrop(false)
+    setSaved(null)
+    setPending(null)
     try {
       const { extractPdfPages } = await import('../services/pdf/extract')
       const report = reconstruct(await extractPdfPages(bytes))
@@ -49,14 +54,32 @@ export function ImportScreen({ sharedPdf, onConsumed }: { sharedPdf: Uint8Array 
     await readBytes(new Uint8Array(await file.arrayBuffer()))
   }
 
-  async function save(dropFuture: boolean) {
-    if (!preview) return
+  function planFor(report: ParsedReport): ReimportPlan {
+    const existing = data.days.find((day) => day.operationalDate === report.operationalDate)
+    return planReimport(existing?.sessions ?? [], report.sessions, report.generatedAt)
+  }
+
+  function beginSave(report: ParsedReport) {
+    const plan = planFor(report)
+    if (plan.disappearedFuture.length > 0) {
+      setPending({ report, plan })
+      return
+    }
+    void finishSave(report, false)
+  }
+
+  async function finishSave(report: ParsedReport, dropFuture: boolean) {
     setBusy(true)
     try {
-      await commitImport(preview.report, dropFuture)
+      await commitImport(report, dropFuture)
+      const asToday = preview != null && report.operationalDate !== preview.report.operationalDate
       setPreview(null)
-      setAskDrop(false)
-      setSaved(true)
+      setPending(null)
+      setSaved(
+        asToday
+          ? `Listo. Los horarios quedaron en el día operativo ${formatOperationalDate(report.operationalDate)}.`
+          : 'Reporte guardado. Las marcas de limpia se conservaron.',
+      )
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'No se pudo guardar el reporte.')
     } finally {
@@ -64,6 +87,9 @@ export function ImportScreen({ sharedPdf, onConsumed }: { sharedPdf: Uint8Array 
     }
   }
 
+  const otherDay = preview != null && preview.report.operationalDate !== today
+  const todayReport = otherDay && preview ? shiftReportToOperationalDate(preview.report, today) : null
+  const todayPlan = todayReport ? planFor(todayReport) : null
   const dayEnded = preview ? Date.parse(preview.report.rangeEnd) <= Date.now() : false
   const screens = preview
     ? [...new Set(preview.report.sessions.map((session) => session.screen))].sort((a, b) => a - b)
@@ -93,7 +119,7 @@ export function ImportScreen({ sharedPdf, onConsumed }: { sharedPdf: Uint8Array 
       </label>
 
       {error && <p className="alert">{error}</p>}
-      {saved && <p className="ok">Reporte guardado. Las marcas de limpia se conservaron.</p>}
+      {saved && <p className="ok">{saved}</p>}
 
       {preview && (
         <section className="panel">
@@ -133,49 +159,70 @@ export function ImportScreen({ sharedPdf, onConsumed }: { sharedPdf: Uint8Array 
               Se conservan {preview.plan.keptPast.length} funciones que ya habían terminado y no vienen en este archivo.
             </p>
           )}
-          {dayEnded && <p className="alert">Este día operativo ya terminó. Puedes guardarlo igual.</p>}
+          {otherDay && todayReport && todayPlan && (
+            <div className="notice">
+              <h2>No es el día de hoy</h2>
+              <p>
+                Este PDF es del día operativo {formatOperationalDate(preview.report.operationalDate)}. Hoy es{' '}
+                {formatOperationalDate(today)}, así que Inicio no lo mostraría.
+              </p>
+              <p>
+                Si estos horarios se repiten, puedes guardarlo como el día de hoy. Las horas se quedan igual y la fecha
+                pasa a ser la de hoy.
+              </p>
+              {todayPlan.updated.length > 0 || todayPlan.keptPast.length > 0 ? (
+                <p className="fine">
+                  Hoy ya hay funciones guardadas: {todayPlan.added.length} nuevas y {todayPlan.updated.length} con
+                  cambio. Las salas marcadas limpias se conservan.
+                </p>
+              ) : (
+                <p className="fine">{todayReport.sessions.length} funciones quedarían en el día de hoy.</p>
+              )}
+              <button type="button" className="btn btn-primary" disabled={busy} onClick={() => beginSave(todayReport)}>
+                Guardar como hoy
+              </button>
+            </div>
+          )}
+          {dayEnded && !otherDay && <p className="alert">Este día operativo ya terminó. Puedes guardarlo igual.</p>}
           <div className="row-actions">
             <button type="button" className="btn btn-ghost" onClick={() => setPreview(null)} disabled={busy}>
               Cancelar
             </button>
             <button
               type="button"
-              className="btn btn-primary"
+              className={otherDay ? 'btn btn-ghost' : 'btn btn-primary'}
               disabled={busy}
-              onClick={() => {
-                if (preview.plan.disappearedFuture.length > 0) setAskDrop(true)
-                else void save(false)
-              }}
+              onClick={() => beginSave(preview.report)}
             >
-              Guardar reporte
+              {otherDay ? 'Guardar con la fecha del PDF' : 'Guardar reporte'}
             </button>
           </div>
         </section>
       )}
 
-      {askDrop && preview && (
+      {pending && (
         <div className="modal" role="dialog" aria-modal="true" aria-labelledby="drop-title">
           <div className="modal__card">
             <h2 id="drop-title">Funciones que ya no vienen</h2>
             <p>
-              {preview.plan.disappearedFuture.length} funciones todavía no salían cuando se generó el reporte y ya no
+              {pending.plan.disappearedFuture.length} funciones todavía no salían cuando se generó el reporte y ya no
               aparecen. ¿Las quito?
             </p>
             <ul className="drop-list">
-              {preview.plan.disappearedFuture.map((session) => (
+              {pending.plan.disappearedFuture.map((session) => (
                 <li key={session.id}>
                   Sala {session.screen} · {formatTime(session.finish)} · {session.title}
                 </li>
               ))}
             </ul>
             <div className="row-actions">
-              <button type="button" className="btn btn-ghost" onClick={() => setAskDrop(false)}>
+              <button type="button" className="btn btn-ghost" onClick={() => setPending(null)}>
                 Cancelar
               </button>
-              <button type="button" className="btn btn-ghost" onClick={() => void save(false)}>
+              <button type="button" className="btn btn-ghost" onClick={() => void finishSave(pending.report, false)}>
                 Conservarlas
               </button>
-              <button type="button" className="btn btn-primary" onClick={() => void save(true)}>
+              <button type="button" className="btn btn-primary" onClick={() => void finishSave(pending.report, true)}>
                 Quitarlas
               </button>
             </div>

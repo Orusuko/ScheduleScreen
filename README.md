@@ -63,12 +63,13 @@ Para compartir un PDF hacia la app, el sistema debe ofrecerle «Orden de Salidas
 
 1. Instala el APK y abre la app. La primera pantalla explica notificaciones, alarmas exactas y batería. Continúa aunque no concedas nada.
 2. Importa el PDF de muestra. La vista previa debe decir 31 funciones, día 18/11/2026 y reporte de las 12:28 PM. No aparece la Sala 6.
-3. Guarda. Cierra la app y ábrela: las funciones siguen ahí.
-4. Importa el mismo PDF otra vez. No debe duplicar, y una sala marcada limpia sigue limpia.
-5. En Actuales, una sala ya salida y sin marcar queda arriba. Márcala: pasa a verde y, si ya salió, a Pasadas. Otro toque quita la marca.
-6. Pasadas muestra «Sin marcar» en las que salieron hace más de 60 minutos y nadie marcó.
-7. Una función de las 0:03 AM se lee como 12:03 AM del día siguiente. La última de cada sala dice que no hay siguiente función.
-8. Sala 10 a las 2:55 PM muestra margen 20 min · Justo, siguiente 3:15 PM. Sala 8 a las 4:12 PM muestra 18 min · Ajustado.
-9. En Ajustes, prueba claro, oscuro y automático. El aviso de prueba llega. Cambia el anticipo a 15 min.
-10. Activa el modo avión: importar, marcar y reabrir siguen funcionando.
-11. Con la pantalla bloqueada y la app cerrada, un aviso programado para dentro de un par de minutos debe llegar con un minuto de tolerancia. Reinicia el teléfono y confirma que el aviso pendiente sigue programado.
+3. Si el PDF no es del día operativo de hoy, aparece «No es el día de hoy» y el botón **Guardar como hoy**. Las horas se quedan igual y el reporte se ve en Inicio. **Guardar con la fecha del PDF** lo archiva para cuando llegue ese día, sin mostrarlo ahora.
+4. Cierra la app y ábrela: las funciones siguen ahí.
+5. Importa el mismo PDF otra vez. No debe duplicar, y una sala marcada limpia sigue limpia.
+6. En Actuales, una sala ya salida y sin marcar queda arriba. Márcala: pasa a verde y, si ya salió, a Pasadas. Otro toque quita la marca.
+7. Pasadas muestra «Sin marcar» en las que salieron hace más de 60 minutos y nadie marcó.
+8. Una función de las 0:03 AM se lee como 12:03 AM del día siguiente. La última de cada sala dice que no hay siguiente función.
+9. Sala 10 a las 2:55 PM muestra margen 20 min · Justo, siguiente 3:15 PM. Sala 8 a las 4:12 PM muestra 18 min · Ajustado.
+10. En Ajustes, prueba claro, oscuro y automático. El aviso de prueba llega. Cambia el anticipo a 15 min.
+11. Activa el modo avión: importar, marcar y reabrir siguen funcionando.
+12. Con la pantalla bloqueada y la app cerrada, un aviso programado para dentro de un par de minutos debe llegar con un minuto de tolerancia. Reinicia el teléfono y confirma que el aviso pendiente sigue programado.
