@@ -9,4 +9,5 @@ android/local.properties
 android/captures
 .idea
 *.apk
+!descargas/Orden-de-Salidas.apk
 .vite

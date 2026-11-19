@@ -31,15 +31,31 @@ npm test
 
 El PDF real está en `fixtures/2026-11-18-session-by-finish-time.pdf`. La prueba exige 31 funciones, la salida de las 0:03 AM el 19/11/2026 y los márgenes de referencia.
 
-## APK
+## Instalar en el teléfono, sin computadora
 
-Hace falta Android Studio o el SDK de Android (compileSdk 36).
+El archivo listo está en `descargas/Orden-de-Salidas.apk` (unos 5 MB). En el teléfono, ábrelo con Chrome:
+
+https://github.com/Orusuko/ScheduleScreen/raw/cursor/orden-de-salidas-2668/descargas/Orden-de-Salidas.apk
+
+1. Se descarga un archivo `.apk`.
+2. Si Chrome dice que puede ser dañino, elige **Descargar de todas formas**. No viene de Play Store; es la app de este repositorio.
+3. Abre la descarga. Android pide permiso para instalar desde Chrome: acéptalo.
+4. Instala y abre **Orden de Salidas**.
+
+Sirve en Android 7 o posterior. El PDF de prueba también se puede bajar y luego elegirlo dentro de la app:
+
+https://github.com/Orusuko/ScheduleScreen/raw/cursor/orden-de-salidas-2668/fixtures/2026-11-18-session-by-finish-time.pdf
+
+## Generar el APK otra vez
+
+Hace falta el SDK de Android (compileSdk 36).
 
 ```bash
 npm run cap:sync
+cd android && ./gradlew assembleDebug
 ```
 
-Luego abre la carpeta `android/` y genera el APK de depuración o release. `cap:sync` copia `dist/` al proyecto nativo.
+El resultado queda en `android/app/build/outputs/apk/debug/app-debug.apk`. Cópialo a `descargas/Orden-de-Salidas.apk` si vas a volver a publicarlo. Si la firma cambia, en el teléfono hay que desinstalar la versión anterior antes de instalar la nueva.
 
 Para compartir un PDF hacia la app, el sistema debe ofrecerle «Orden de Salidas» al enviar un `application/pdf`. Si el administrador de archivos manda otro tipo MIME, usa **Elegir PDF de Vista**.
 
