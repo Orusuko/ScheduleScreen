@@ -1,0 +1,13 @@
+/** Claqueta con un reloj: se lee bien en el encabezado y en el icono. */
+export function Logo({ size = 40 }: { size?: number }) {
+  return (
+    <svg className="logo" width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">
+      <rect x="1.5" y="1.5" width="45" height="45" rx="13" fill="#7C3AED" />
+      <path d="M12 16.5h24l-2.4-5.2c-.3-.7-1-1.1-1.8-1.1H16.2c-.8 0-1.5.4-1.8 1.1L12 16.5Z" fill="#4B2C8F" />
+      <rect x="12" y="16.5" width="24" height="16" rx="2.5" fill="#F8FAFC" />
+      <path d="M16 21.2h10M16 25h7" stroke="#7C3AED" strokeWidth="1.7" strokeLinecap="round" />
+      <circle cx="31.5" cy="27.5" r="5.2" fill="#F59E0B" />
+      <path d="M31.5 25.1v2.6l1.7 1.1" stroke="#4B2C8F" strokeWidth="1.4" strokeLinecap="round" fill="none" />
+    </svg>
+  )
+}
