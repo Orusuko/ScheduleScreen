@@ -30,6 +30,18 @@ public class DeviceSettingsPlugin extends Plugin {
         call.resolve();
     }
 
+    /** Lista donde se puede volver a activar el ahorro para esta app. */
+    @PluginMethod
+    public void openBatterySettings(PluginCall call) {
+        Activity activity = getActivity();
+        if (activity == null) {
+            call.reject("Sin actividad");
+            return;
+        }
+        activity.startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+        call.resolve();
+    }
+
     @PluginMethod
     public void isIgnoringBatteryOptimizations(PluginCall call) {
         PowerManager manager = (PowerManager) getContext().getSystemService(Activity.POWER_SERVICE);

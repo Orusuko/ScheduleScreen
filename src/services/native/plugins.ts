@@ -10,6 +10,7 @@ type ExactAlertsPlugin = {
 
 type DeviceSettingsPlugin = {
   openBatteryOptimization(): Promise<void>
+  openBatterySettings(): Promise<void>
   isIgnoringBatteryOptimizations(): Promise<{ ignoring: boolean }>
 }
 
@@ -39,6 +40,10 @@ class ExactAlertsWeb extends WebPlugin implements ExactAlertsPlugin {
 
 class DeviceSettingsWeb extends WebPlugin implements DeviceSettingsPlugin {
   async openBatteryOptimization(): Promise<void> {
+    throw new Error('La optimización de batería se ajusta en el teléfono Android.')
+  }
+
+  async openBatterySettings(): Promise<void> {
     throw new Error('La optimización de batería se ajusta en el teléfono Android.')
   }
 

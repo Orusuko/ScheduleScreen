@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { Capacitor } from '@capacitor/core'
+import { useEffect, useState } from 'react'
 import { Logo } from '../components/Logo'
 import { ShowtimeGroup } from '../components/ShowtimeGroup'
 import { useNow } from '../hooks/useNow'
+import { DeviceSettings } from '../services/native/plugins'
 import { buildHome } from '../services/schedule/home'
 import { useStore } from '../store/Store'
 import { currentOperationalDate, formatOperationalDate, formatTime } from '../utils/time'
@@ -10,6 +12,21 @@ export function HomeScreen({ onImport, onSettings }: { onImport: () => void; onS
   const { data, toggleClean } = useStore()
   const now = useNow()
   const [section, setSection] = useState<'actuales' | 'pasadas'>('actuales')
+  const [batteryUnrestricted, setBatteryUnrestricted] = useState(false)
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return
+    const check = () => {
+      void DeviceSettings.isIgnoringBatteryOptimizations()
+        .then((status) => setBatteryUnrestricted(status.ignoring))
+        .catch(() => setBatteryUnrestricted(false))
+    }
+    check()
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') check()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [])
   const operationalDate = currentOperationalDate(now)
   const day = data.days.find((entry) => entry.operationalDate === operationalDate) ?? null
   const home = day ? buildHome(day.sessions, data.settings, now) : null
@@ -30,6 +47,22 @@ export function HomeScreen({ onImport, onSettings }: { onImport: () => void; onS
           </svg>
         </button>
       </header>
+
+      {batteryUnrestricted && (
+        <section className="notice">
+          <h2>El ahorro de batería está apagado</h2>
+          <p>Esta app quedó fuera del ahorro y por eso el teléfono se descarga más rápido. Puedes volver a activarlo: los avisos siguen llegando a su hora.</p>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => {
+              void DeviceSettings.openBatterySettings().catch(() => undefined)
+            }}
+          >
+            Activar ahorro
+          </button>
+        </section>
+      )}
 
       <section className="daybar">
         <p>Día operativo {formatOperationalDate(operationalDate)}</p>

@@ -16,16 +16,18 @@ export function SettingsScreen() {
   const { data, patchSettings } = useStore()
   const { settings } = data
   const [message, setMessage] = useState<string | null>(null)
-  const [permissions, setPermissions] = useState({ notifications: '…', exact: '…', battery: '…' })
+  const [permissions, setPermissions] = useState({ notifications: '…', exact: '…', battery: '…', unrestricted: false })
 
   async function refreshPermissions() {
     const notifications = await notificationPermission()
     const exact = await exactAlarmPermission()
     let battery = 'En el teléfono'
+    let unrestricted = false
     if (Capacitor.isNativePlatform()) {
       try {
         const status = await DeviceSettings.isIgnoringBatteryOptimizations()
-        battery = status.ignoring ? 'Sin restricción' : 'Optimizada'
+        unrestricted = status.ignoring
+        battery = status.ignoring ? 'Sin ahorro · gasta más' : 'Con ahorro'
       } catch {
         battery = 'No disponible'
       }
@@ -34,11 +36,17 @@ export function SettingsScreen() {
       notifications: labelPermission(notifications),
       exact: Capacitor.isNativePlatform() ? labelPermission(exact) : 'Se pide en Android',
       battery,
+      unrestricted,
     })
   }
 
   useEffect(() => {
     void refreshPermissions()
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void refreshPermissions()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
   }, [])
 
   const days = [...data.days].sort((a, b) => b.operationalDate.localeCompare(a.operationalDate))
@@ -168,13 +176,18 @@ export function SettingsScreen() {
         <PermissionRow
           label="Batería"
           value={permissions.battery}
-          action="Excluir"
+          action={permissions.unrestricted ? 'Activar ahorro' : ''}
           onAction={() => {
-            void DeviceSettings.openBatteryOptimization()
+            void DeviceSettings.openBatterySettings()
               .then(() => refreshPermissions())
               .catch((error: unknown) => setMessage(error instanceof Error ? error.message : 'No disponible en el navegador.'))
           }}
         />
+        {permissions.unrestricted && (
+          <p className="fine">
+            Esta app está fuera del ahorro de batería. Puedes volver a activarlo: los avisos siguen llegando a su hora.
+          </p>
+        )}
       </section>
 
       <section className="panel">
@@ -269,9 +282,11 @@ function PermissionRow({
         <strong>{label}</strong>
         <span>{value}</span>
       </div>
-      <button type="button" className="btn btn-ghost" onClick={onAction}>
-        {action}
-      </button>
+      {action !== '' && (
+        <button type="button" className="btn btn-ghost" onClick={onAction}>
+          {action}
+        </button>
+      )}
     </div>
   )
 }

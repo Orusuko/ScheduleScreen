@@ -1,7 +1,5 @@
-import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { Logo } from '../components/Logo'
-import { DeviceSettings } from '../services/native/plugins'
 import { useStore } from '../store/Store'
 
 export function PermissionsScreen() {
@@ -24,30 +22,16 @@ export function PermissionsScreen() {
       </article>
       <article className="panel">
         <h2>Alarmas exactas</h2>
-        <p>Android puede retrasar un aviso si no autorizas las alarmas exactas. En este teléfono el permiso se concede al instalar; si no, ábrelo aquí.</p>
+        <p>
+          Android puede retrasar un aviso si no autorizas las alarmas exactas. En este teléfono el permiso se concede al
+          instalar; si no, ábrelo aquí. No hace falta quitar el ahorro de batería.
+        </p>
         <button
           type="button"
           className="btn btn-ghost"
           onClick={() => void LocalNotifications.changeExactNotificationSetting()}
         >
           Revisar alarmas exactas
-        </button>
-      </article>
-      <article className="panel">
-        <h2>Batería</h2>
-        <p>
-          {Capacitor.isNativePlatform()
-            ? 'Algunas marcas cierran la app en segundo plano. Excluirla evita que se pierdan los avisos.'
-            : 'En el teléfono Android podrás excluir la app de la optimización de batería.'}
-        </p>
-        <button
-          type="button"
-          className="btn btn-ghost"
-          onClick={() => {
-            void DeviceSettings.openBatteryOptimization().catch(() => undefined)
-          }}
-        >
-          Excluir de la optimización
         </button>
       </article>
       <button type="button" className="btn btn-primary" onClick={() => void finishIntro()}>

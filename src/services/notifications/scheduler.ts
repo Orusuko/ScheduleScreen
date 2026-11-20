@@ -2,18 +2,21 @@ import type { AppData } from '../../types'
 import { ExactAlerts } from '../native/plugins'
 import { planNotifications } from './plan'
 
-/** Reemplaza todas las alarmas con el plan vigente. En el navegador no hay alarma de fondo. */
+let syncedPlan = ''
+
+/** Manda el plan al teléfono. Si no cambió, no rearma la alarma. */
 export async function syncNotifications(data: AppData, now = new Date()): Promise<void> {
-  const plan = planNotifications(data, now)
+  const alerts = planNotifications(data, now).map((alert) => ({
+    id: alert.id,
+    at: Date.parse(alert.at),
+    title: alert.title,
+    body: alert.body,
+  }))
+  const fingerprint = JSON.stringify(alerts)
+  if (fingerprint === syncedPlan) return
   try {
-    await ExactAlerts.replace({
-      alerts: plan.map((alert) => ({
-        id: alert.id,
-        at: Date.parse(alert.at),
-        title: alert.title,
-        body: alert.body,
-      })),
-    })
+    await ExactAlerts.replace({ alerts })
+    syncedPlan = fingerprint
   } catch {
     // Sin permiso de alarma exacta el teléfono no puede prometer la hora. La pantalla de ajustes lo explica.
   }

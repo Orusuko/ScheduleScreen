@@ -61,10 +61,10 @@ Para compartir un PDF hacia la app, el sistema debe ofrecerle «Orden de Salidas
 
 ## Prueba manual
 
-1. Instala el APK y abre la app. La primera pantalla explica notificaciones, alarmas exactas y batería. Continúa aunque no concedas nada.
+1. Instala el APK y abre la app. La primera pantalla explica notificaciones y alarmas exactas. Continúa aunque no concedas nada. No quites el ahorro de batería.
 2. Importa el PDF de muestra. La vista previa debe decir 31 funciones, día 18/11/2026 y reporte de las 12:28 PM. No aparece la Sala 6.
 3. Si el PDF no es del día operativo de hoy, aparece «No es el día de hoy» y el botón **Guardar como hoy**. Las horas se quedan igual y el reporte se ve en Inicio. **Guardar con la fecha del PDF** lo archiva para cuando llegue ese día, sin mostrarlo ahora.
-4. Cierra la app y ábrela: las funciones siguen ahí.
+4. Cierra la app y ábrela: las funciones siguen ahí. Si Inicio dice que el ahorro de batería está apagado, actívalo: los avisos no necesitan esa exclusión.
 5. Importa el mismo PDF otra vez. No debe duplicar, y una sala marcada limpia sigue limpia.
 6. En Actuales, una sala ya salida y sin marcar queda arriba. Márcala: pasa a verde y, si ya salió, a Pasadas. Otro toque quita la marca.
 7. Pasadas muestra «Sin marcar» en las que salieron hace más de 60 minutos y nadie marcó.
